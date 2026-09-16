@@ -75,7 +75,10 @@ class hashTable {
 
   // Search for an item with the specified key.
   // Return the position if found, -1 otherwise.
-  int findPos(const std::string &key);
+
+  //changed this to return a pair of <index if found, first tombstone index seen>
+  //for both elements in the pair, if not found, will be -1
+  std::pair<int, int> findPos(const std::string &key);
 
   // The rehash function; makes the hash table bigger.
   // Returns true on success, false if memory allocation fails.
