@@ -1,31 +1,13 @@
 #include "hash.h"
 #include <cstdint>
 #include <cassert>
+#include <stdexcept>
+#include <iostream>
 
 const double REHASH_RATIO = 0.5;
 
 
 static const std::vector<int> primeCapacities = {
-    2,
-    3,
-    5,
-    11,
-    17,
-    37,
-    67,
-    131,
-    257,
-    521,
-    1031,
-    2053,
-    4099,
-    8209,
-    16411,
-    32771,
-    65537,
-    131101,
-    262147,
-    524309,
     1048583,
     2097169,
     4194319,
@@ -71,7 +53,7 @@ int hashTable::hash(const std::string &key) {
 
 }
 
-findPosResult hashTable::findPos(const std::string &key) {
+hashTable::findPosResult hashTable::findPos(const std::string &key) {
     int index = hash(key);
     int first_tombstone_index = -1;
     
@@ -114,23 +96,28 @@ bool hashTable::contains(const std::string &key) {
 }
 
 int hashTable::insert(const std::string &key, void *pv) {
+
+    if(REHASH_RATIO <= (double)(filled+1)/capacity) {
+        if(!rehash()) {
+            return 2;
+        }
+    }
+
     findPosResult result = findPos(key);
     
     if(result.found) {
-        return -1;
+        return 1;
         //duplicate was found
     }
 
     else {
         //empty slot successfully found
-        if(REHASH_RATIO <= (double)(filled+1)/capacity) {
-            rehash();
-        }
 
         if(result.tombstone != -1) {
-            data[result.index].isOccupied = true;
-            data[result.index].key = key;
-            data[result.index].pv = pv;
+            data[result.tombstone].isOccupied = true;
+            data[result.tombstone].isDeleted = false;
+            data[result.tombstone].key = key;
+            data[result.tombstone].pv = pv;
         }
         else {
             data[result.index].isOccupied = true;
@@ -140,10 +127,56 @@ int hashTable::insert(const std::string &key, void *pv) {
         }
     }
 
-    return 1;
+    return 0;
 }
 
 bool hashTable::rehash() {
+
+    std::vector<hashItem> tmp;
+    
+    int new_capacity = getPrime(capacity);
+    
+    if(new_capacity == capacity) {
+        //max capacity reached already, cannot grow any larger
+        return false;
+    }
+
+    try {
+        tmp.resize(new_capacity);
+    }
+
+    catch (const std::bad_alloc& e){
+        std::cerr << "memory allocation for rehashing failed" << e.what() << std::endl;
+        return false;
+    }
+
+    catch (const std::length_error& e) {
+        std::cerr << "length error with vector resizing" << e.what() << std::endl;
+        return false;
+    } 
+
+    std::swap(tmp, data);
+
+    capacity = new_capacity;
+    filled = 0;
+
+    for(auto item : tmp) {
+        if(item.isOccupied || item.isDeleted) {
+            //skip the tombstones and empty slots, this will not include them in rehashed vector
+            //a sort of garbage collection
+            continue;
+        }
+
+        int index = hash(item.key);
+
+        while(data[index].isOccupied) {
+            index = (index+1)%capacity;
+        }
+
+        data[index] = std::move(item);
+    }
+
+    //at the end of scope, tmp should destruct along with the old data as well
     
 }
 
