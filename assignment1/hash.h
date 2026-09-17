@@ -8,6 +8,20 @@ this is a provided hash header file from Professor Sable
 #include <vector>
 #include <string>
 
+class findPosResult {
+  public:
+  
+  int index;
+  int tombstone;
+  bool found;
+
+  findPosResult(int index, int tombstone, bool found_key) {
+    index = index;
+    tombstone = tombstone;
+    found_key = found;
+  }
+};
+
 class hashTable {
 
  public:
@@ -76,9 +90,8 @@ class hashTable {
   // Search for an item with the specified key.
   // Return the position if found, -1 otherwise.
 
-  //changed this to return a pair of <index if found, first tombstone index seen>
-  //for both elements in the pair, if not found, will be -1
-  std::pair<int, int> findPos(const std::string &key);
+  //changed this to return a custom findPosResult struct
+  findPosResult findPos(const std::string &key);
 
   // The rehash function; makes the hash table bigger.
   // Returns true on success, false if memory allocation fails.

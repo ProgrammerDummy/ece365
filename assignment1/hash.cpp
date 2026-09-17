@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <cassert>
 
-const float REHASH_RATIO = 0.5;
+const double REHASH_RATIO = 0.5;
 
 
 static const std::vector<int> primeCapacities = {
@@ -71,7 +71,7 @@ int hashTable::hash(const std::string &key) {
 
 }
 
-std::pair<int, int> hashTable::findPos(const std::string &key) {
+findPosResult hashTable::findPos(const std::string &key) {
     int index = hash(key);
     int first_tombstone_index = -1;
     
@@ -88,7 +88,7 @@ std::pair<int, int> hashTable::findPos(const std::string &key) {
             }
         } else {
             if(data[index].key == key) {
-                return {index, first_tombstone_index};
+                return findPosResult(index, first_tombstone_index, true);
             }
         }
 
@@ -96,7 +96,7 @@ std::pair<int, int> hashTable::findPos(const std::string &key) {
         //wraps around, exit is guaranteed since capacity > filled and rehash ratio is at 0.5
     }
 
-    return {index, first_tombstone_index};
+    return findPosResult(index, first_tombstone_index, false);
     //if called by insert, the pair returned will be the index of the first empty slot and the 
     //first tombstone seen after initial index from hash()
 }
@@ -110,18 +110,54 @@ isOccupied == true && isDeleted == true: tombstone from deletion
 */
 
 bool hashTable::contains(const std::string &key) {
-
+    return findPos(key).found;
 }
 
 int hashTable::insert(const std::string &key, void *pv) {
+    findPosResult result = findPos(key);
+    
+    if(result.found) {
+        return -1;
+        //duplicate was found
+    }
 
+    else {
+        //empty slot successfully found
+        if(REHASH_RATIO <= (double)(filled+1)/capacity) {
+            rehash();
+        }
+
+        if(result.tombstone != -1) {
+            data[result.index].isOccupied = true;
+            data[result.index].key = key;
+            data[result.index].pv = pv;
+        }
+        else {
+            data[result.index].isOccupied = true;
+            data[result.index].key = key;
+            data[result.index].pv = pv;
+            filled += 1;
+        }
+    }
+
+    return 1;
 }
 
 bool hashTable::rehash() {
     
 }
 
+void* hashTable::getPointer(const std::string &key, bool *b) {
 
+}
+
+int hashTable::setPointer(const std::string &key, void *pv) {
+
+}
+
+bool hashTable::remove(const std::string &key) {
+    
+}
 
 
 
