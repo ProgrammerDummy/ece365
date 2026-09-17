@@ -8,19 +8,6 @@ this is a provided hash header file from Professor Sable
 #include <vector>
 #include <string>
 
-class findPosResult {
-  public:
-  
-  int index;
-  int tombstone;
-  bool found;
-
-  findPosResult(int index, int tombstone, bool found_key) {
-    index = index;
-    tombstone = tombstone;
-    found_key = found;
-  }
-};
 
 class hashTable {
 
@@ -77,6 +64,20 @@ class hashTable {
     void *pv {nullptr};
 
     hashItem() = default;
+  };
+
+  class findPosResult {
+    public:
+    
+    int index;
+    int tombstone;
+    bool found;
+
+    findPosResult(int found_index, int found_tombstone, bool found_key) {
+      index = found_index;
+      tombstone = found_tombstone;
+      found = found_key;
+    }
   };
 
   int capacity; // The current capacity of the hash table.
