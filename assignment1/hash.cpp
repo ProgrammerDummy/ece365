@@ -134,7 +134,7 @@ bool hashTable::rehash() {
 
     std::vector<hashItem> tmp;
     
-    int new_capacity = getPrime(capacity);
+    int new_capacity = getPrime(capacity+1);
     
     if(new_capacity == capacity) {
         //max capacity reached already, cannot grow any larger
