@@ -1,25 +1,36 @@
 #include "hash.h"
+
 #include <cstdint>
 #include <cassert>
 #include <stdexcept>
 #include <iostream>
 
+
 const double REHASH_RATIO = 0.5;
 
 
 static const std::vector<int> primeCapacities = {
+    2053,
+    4099,
+    8209,
+    16411,
+    32771,
+    65537,
+    131101,
+    262147,
+    524309,
     1048583,
     2097169,
     4194319,
     8388617,
     16777259,
     33554467,
-    67108879,
+    67108879
 };
 
 
 unsigned int hashTable::getPrime(int size) {
-    for(int i = 0; i < primeCapacities.size(); i++) {
+    for(int i = 0; i < (int)primeCapacities.size(); i++) {
         if(primeCapacities[i] >= size) {
             return primeCapacities[i];
         } 
@@ -29,6 +40,7 @@ unsigned int hashTable::getPrime(int size) {
 }
 
 hashTable::hashTable(int size) {
+
     int prime = hashTable::getPrime(size);
 
     data.resize(prime);
@@ -110,21 +122,19 @@ int hashTable::insert(const std::string &key, void *pv) {
         //duplicate was found
     }
 
-    else {
-        //empty slot successfully found
+    //empty tombstone found
+    if(result.tombstone != -1) {
+        data[result.tombstone].isOccupied = true;
+        data[result.tombstone].isDeleted = false;
+        data[result.tombstone].key = key;
+        data[result.tombstone].pv = pv;
+    }
 
-        if(result.tombstone != -1) {
-            data[result.tombstone].isOccupied = true;
-            data[result.tombstone].isDeleted = false;
-            data[result.tombstone].key = key;
-            data[result.tombstone].pv = pv;
-        }
-        else {
-            data[result.index].isOccupied = true;
-            data[result.index].key = key;
-            data[result.index].pv = pv;
-            filled += 1;
-        }
+    else {
+        data[result.index].isOccupied = true;
+        data[result.index].key = key;
+        data[result.index].pv = pv;
+        filled += 1;
     }
 
     return 0;
@@ -160,10 +170,10 @@ bool hashTable::rehash() {
     capacity = new_capacity;
     filled = 0;
 
-    for(auto item : tmp) {
-        if(item.isOccupied || item.isDeleted) {
+    for(auto& item : tmp) {
+        if(!item.isOccupied || item.isDeleted) {
             //skip the tombstones and empty slots, this will not include them in rehashed vector
-            //a sort of garbage collection
+            //a sort of garbage collection per rehash
             continue;
         }
 
@@ -174,22 +184,56 @@ bool hashTable::rehash() {
         }
 
         data[index] = std::move(item);
+        filled++;
     }
 
-    //at the end of scope, tmp should destruct along with the old data as well
     
+    //at the end of scope, tmp should destruct along with the old data as well
+    return true;
+    
+  
 }
 
 void* hashTable::getPointer(const std::string &key, bool *b) {
+    findPosResult result = findPos(key);
 
+    if(result.found) {
+        if(b != nullptr) {
+            *b = true;
+        }
+
+        return data[result.index].pv;
+    }
+    
+    if(b != nullptr) {
+        *b = false;
+    }
+
+    return nullptr;
 }
 
 int hashTable::setPointer(const std::string &key, void *pv) {
+    findPosResult result = findPos(key);
 
+    if(result.found) {
+        data[result.index].pv = pv;
+        return 0;
+    }
+
+    return 1;
 }
 
 bool hashTable::remove(const std::string &key) {
-    
+    findPosResult result = findPos(key);
+
+    if(result.found) {
+        data[result.index].isDeleted = true;
+        return true;
+    }
+
+    return false;
+
+    //note: remove leaves pv within the tombstone
 }
 
 
