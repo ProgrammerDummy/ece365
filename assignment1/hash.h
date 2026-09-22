@@ -1,13 +1,10 @@
-/*
-this is a provided hash header file from Professor Sable
-*/
+//this is a provided hash header file from Professor Sable
 
 #ifndef _HASH_H
 #define _HASH_H
 
 #include <vector>
 #include <string>
-
 
 class hashTable {
 
@@ -68,7 +65,6 @@ class hashTable {
 
   class findPosResult {
     public:
-    
     int index;
     int tombstone;
     bool found;
@@ -89,9 +85,7 @@ class hashTable {
   int hash(const std::string &key);
 
   // Search for an item with the specified key.
-  // Return the position if found, -1 otherwise.
-
-  //changed this to return a custom findPosResult struct
+  // Returns a findPosResult struct
   findPosResult findPos(const std::string &key);
 
   // The rehash function; makes the hash table bigger.
