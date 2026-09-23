@@ -20,7 +20,6 @@ void check_curr_word(char c, std::string& current_word, std::ofstream& output_fi
         if(!current_word.empty()) {
             if(current_word.size() >= 21) {
                 output_file << "Long word at line " << line_num << ", starts: " << current_word.substr(0, 20) << "\n";
-                current_word = current_word.substr(0, 20);
             }
 
             else if(!hashtable.contains(current_word) && !std::any_of(current_word.begin(), current_word.end(), ::isdigit)) {
@@ -57,10 +56,11 @@ int main(void) {
         return 1;
     }
 
-    
-    hashTable hashtable;
-
     std::clock_t dictionary_load_start = clock();
+        
+    hashTable hashtable(1000000);
+    //pass a size hint to the hashtable, start at 1 million
+
 
     std::string line;
     while(std::getline(dictionary_file, line)) {
@@ -96,12 +96,12 @@ int main(void) {
 
     int line_num = 1;
     
+    std::string current_word = "";
+
     while(std::getline(input_file, line)) {
         std::transform(line.begin(), line.end(), line.begin(), [](unsigned char c) {
             return std::tolower(c);
         });
-        
-        std::string current_word = "";
 
         
         for(char c : line) {
