@@ -65,9 +65,9 @@ class hashTable {
 
   class findPosResult {
     public:
-    int index;
-    int tombstone;
-    bool found;
+    int index {-1};
+    int tombstone {-1};
+    bool found {false};
 
     findPosResult(int found_index, int found_tombstone, bool found_key) {
       index = found_index;
