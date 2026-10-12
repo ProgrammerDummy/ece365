@@ -38,9 +38,9 @@ void heap::percolateUp(int posCur) {
     //i/2 is parent node
 
     assert(posCur > 0);
-    assert(posCur <= capacity);
+    assert(posCur <= curr_size);
 
-    heapNode temp = nodes[posCur];
+    heapNode temp = std::move(nodes[posCur]);
     
     //hole is at nodes[posCur] now
 
@@ -54,18 +54,46 @@ void heap::percolateUp(int posCur) {
 }
 
 void heap::percolateDown(int posCur) {
+    assert(posCur > 0);
+    assert(posCur <= curr_size);
+
+    heapNode temp = std::move(nodes[posCur]);
+
+    while(2*posCur <= curr_size) {
+        int child = 2*posCur;
+        //start by assuming left child
+
+        if(child+1 <= curr_size && nodes[child].key > nodes[child+1].key) {
+            child += 1;
+        }
+
+        if(nodes[child].key < temp.key) {
+            updateMapping(posCur, nodes[child]);
+            posCur = child;
+        }
+
+        else {
+            break;
+        }
+    }
+
+    updateMapping(posCur, temp);
 
 }
 
 int heap::getIndex(const std::string& id) {
-    void* ptr = hashtable.getPointer(id);
+    bool found = false;
+    void* ptr = hashtable.getPointer(id, &found);
 
-    if(ptr == nullptr) {
+    if(found == false) {
         //in this context 0 is impossible, signifies the id could not be found within hashtable
         return 0;
     }
 
-    return static_cast<heapNode*>(ptr) - &nodes[0];
+    assert(ptr != nullptr);
+    //this assertion fails if there was a hashtable entry found but the pv of said entry is nullptr
+
+    return static_cast<int>(static_cast<heapNode*>(ptr) - nodes.data());
 }
 
 void heap::updateMapping(int index, heapNode& node) {
