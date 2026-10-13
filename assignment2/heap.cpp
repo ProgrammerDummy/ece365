@@ -17,19 +17,128 @@ heap::heap(int cap) : capacity(std::max(0, cap)), curr_size(0), nodes(capacity+1
 */
 
 int heap::insert(const std::string &id, int key, void *pv) {
-    return 0; //placeholder for now
+    if(curr_size == capacity) {
+        return 1;
+    }
+
+    if(getIndex(id)) {
+        return 2;
+    }
+
+    nodes[curr_size+1].id = id;
+    nodes[curr_size+1].key = key;
+    nodes[curr_size+1].data_ptr = pv;
+
+    int result = hashtable.insert(id, &nodes[curr_size+1]);
+
+    assert(result != 2);
+
+    curr_size++;
+
+    percolateUp(curr_size);
+
+    (void)result;
+    return 0;
 }
 
 int heap::setKey(const std::string &id, int key) {
-    return 0; //placeholder for now
+    
+    int index = getIndex(id);
+
+    if(index == 0) {
+        return 1;
+    }
+
+    int old_key = nodes[index].key;
+
+    if(key == old_key) {
+        return 0;
+    }
+
+    nodes[index].key = key;
+    
+    if(key < old_key) {
+        percolateUp(index);
+    }
+
+    else {
+        percolateDown(index);
+    }
+
+    return 0; 
 }
 
 int heap::deleteMin(std::string *pId, int *pKey, void *ppData) {
-    return 0; //placeholder for now
+    if(curr_size == 0) {
+        return 1;
+    }
+
+    if(pId != nullptr) {
+        *pId = nodes[1].id;
+    }
+
+    if(pKey != nullptr) {
+        *pKey = nodes[1].key;
+    }
+
+    if(ppData != nullptr) {
+        *static_cast<void**>(ppData) = nodes[1].data_ptr;
+    }
+
+    hashtable.remove(nodes[1].id);
+
+    if(curr_size == 1) {
+        curr_size--;
+        return 0;
+    }
+
+    updateMapping(1, nodes[curr_size]);
+
+    curr_size--;
+
+    percolateDown(1);
+
+    return 0; 
 }
 
 int heap::remove(const std::string &id, int *pKey, void *ppData) {
-    return 0; //placeholder for now
+    int index = getIndex(id);
+
+    if(index == 0) {
+        return 1;
+    }
+
+
+    if(pKey != nullptr) {
+        *pKey = nodes[index].key;
+    }
+
+    if(ppData != nullptr) {
+        *static_cast<void**>(ppData) = nodes[index].data_ptr;
+    }
+
+    int old_key = nodes[index].key;
+
+    hashtable.remove(nodes[index].id);
+
+    if(index == curr_size) {
+        curr_size--;
+        return 0;
+    }
+
+    updateMapping(index, nodes[curr_size]);
+
+    curr_size--;
+
+    if(nodes[index].key < old_key) {
+        percolateUp(index);
+    }
+
+    else {
+        percolateDown(index);
+    }
+
+    return 0; 
 }
 
 void heap::percolateUp(int posCur) {
