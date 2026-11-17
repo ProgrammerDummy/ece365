@@ -31,9 +31,7 @@ int main(void) {
     if(!myGraph.valid_vertex(start_vertex)) {
         std::cout << "invalid vertex given" << std::endl;
     }
-
-    //myGraph.print_loaded_data();
-
+    
     std::clock_t dijkstra_starttime = clock();
 
     myGraph.run_dijkstra(start_vertex);
@@ -43,8 +41,6 @@ int main(void) {
     double dijkstra_total_time = static_cast<double>(dijkstra_endtime - dijkstra_starttime)/CLOCKS_PER_SEC;
 
     std::cout << "Total time (in seconds) to apply Dijkstra's algorithm: " << dijkstra_total_time << std::endl;
-
-    //myGraph.print_loaded_data();
 
     std::cout << "Enter name of output file: ";
 

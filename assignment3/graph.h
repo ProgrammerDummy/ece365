@@ -16,8 +16,9 @@ given in the assignment document.
 #include <fstream>
 #include <sstream>
 #include <cassert>
+#include <stack>
 
-#define MAX_DISTANCE 1000001
+#define MAX_DISTANCE 1000000001
 
 class graph {
     public:
@@ -28,6 +29,7 @@ class graph {
             }
         }
 
+        
         void print_loaded_data() {
             //just a simple function to help me confirm things went right, will be deleted later
             for(vertex* ptr : appearance) {
@@ -97,10 +99,8 @@ class graph {
         void run_dijkstra(const std::string& start_vertex) {
             heap minHeap(appearance.size());
 
-            std::cout << "sep" << std::endl;
-
             for(vertex* v : appearance) {
-                //1000001 represents infinity, since all distances are positive integers less than one million
+                //1000000001 represents infinity, since all distances are positive integers less than one billion
                 //according to the assignment doc
 
                 v->dist = MAX_DISTANCE; 
@@ -117,6 +117,10 @@ class graph {
 
             vertex* popped_vertex = nullptr;
 
+            for(vertex* v : appearance) {
+                minHeap.insert(v->id, v->dist, v);
+            }
+
             while(!minHeap.deleteMin(nullptr, nullptr, &popped_vertex)) {
 
                 if(popped_vertex->known) {
@@ -129,7 +133,7 @@ class graph {
                     if(!path.dest->known && path.weight + popped_vertex->dist < path.dest->dist) {
                         path.dest->dist = path.weight + popped_vertex->dist;
                         path.dest->prev = popped_vertex;
-                        minHeap.insert(path.dest->id, path.dest->dist, path.dest);
+                        minHeap.setKey(path.dest->id, path.dest->dist);
                     }
                 }
             }
@@ -169,7 +173,7 @@ class graph {
                     output_file << path_to_v.top();
                     path_to_v.pop();
 
-                    if(path_to_v.size() >= 1) {
+                    if(!path_to_v.empty()) {
                         output_file << ", ";
                     } 
                 }
