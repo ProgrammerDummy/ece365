@@ -95,11 +95,53 @@ class graph {
         void run_dijkstra(const std::string& start_vertex) {
             heap minHeap(10000);
 
+            for(vertex* v : appearance) {
+                //1000001 represents infinity, since all distances are positive integers less than one million
+                //according to the assignment doc
+
+                v->dist = 1000001; 
+                v->known = false;
+                v->prev = nullptr;
+            }
+
+            vertex* start_point = static_cast<vertex*>(hashtable.getPointer(start_vertex));
+
+            start_point->dist = 0;
             
+            minHeap.insert(start_vertex, start_point->dist, start_point);
+
+            vertex* popped_vertex = new vertex("dummy", -1, nullptr, false);
+
+            while(!minHeap.deleteMin(nullptr, nullptr, popped_vertex)) {
+                if(popped_vertex->known) {
+                    continue;
+                }
+
+                popped_vertex->known = true;
+
+                for(edge path : popped_vertex->adj_list) {
+                    if(!path.dest->known && path.weight + popped_vertex->dist < path.dest->dist) {
+                        path.dest->dist = path.weight + popped_vertex->dist;
+                        path.dest->prev = popped_vertex;
+                        minHeap.insert(path.dest->id, path.dest->dist, path.dest);
+                    }
+                }
+            }
+
+            return;
+
+
         }
 
         void write_output(const std::string& output_filename) {
+            std::ifstream output_file(output_filename);
 
+            if(!output_file.is_open()) {
+                std::cerr << "error occurred, could not open file" << std::endl;
+                return;
+            }
+
+            
         }
 
     private:
