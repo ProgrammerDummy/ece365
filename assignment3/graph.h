@@ -17,6 +17,8 @@ given in the assignment document.
 #include <sstream>
 #include <cassert>
 
+#define MAX_DISTANCE 1000001
+
 class graph {
     public:
 
@@ -93,15 +95,18 @@ class graph {
         }
 
         void run_dijkstra(const std::string& start_vertex) {
-            heap minHeap(10000);
+            heap minHeap(appearance.size());
+
+            std::cout << "sep" << std::endl;
 
             for(vertex* v : appearance) {
                 //1000001 represents infinity, since all distances are positive integers less than one million
                 //according to the assignment doc
 
-                v->dist = 1000001; 
+                v->dist = MAX_DISTANCE; 
                 v->known = false;
                 v->prev = nullptr;
+                
             }
 
             vertex* start_point = static_cast<vertex*>(hashtable.getPointer(start_vertex));
@@ -110,9 +115,10 @@ class graph {
             
             minHeap.insert(start_vertex, start_point->dist, start_point);
 
-            vertex* popped_vertex = new vertex("dummy", -1, nullptr, false);
+            vertex* popped_vertex = nullptr;
 
-            while(!minHeap.deleteMin(nullptr, nullptr, popped_vertex)) {
+            while(!minHeap.deleteMin(nullptr, nullptr, &popped_vertex)) {
+
                 if(popped_vertex->known) {
                     continue;
                 }
@@ -134,11 +140,42 @@ class graph {
         }
 
         void write_output(const std::string& output_filename) {
-            std::ifstream output_file(output_filename);
+            std::ofstream output_file(output_filename);
 
             if(!output_file.is_open()) {
                 std::cerr << "error occurred, could not open file" << std::endl;
                 return;
+            }
+
+            for(vertex* v : appearance) {
+
+                std::stack<std::string> path_to_v;
+
+                vertex* dum = v;
+
+                while(dum) {
+                    path_to_v.push(dum->id);
+                    dum = dum->prev;
+                }
+
+                if(v->dist == MAX_DISTANCE) {
+                    output_file << v->id << ": NO PATH" << std::endl;
+                    continue; 
+                }
+
+                output_file << v->id << ": " << v->dist << " [";
+
+                while(!path_to_v.empty()) {
+                    output_file << path_to_v.top();
+                    path_to_v.pop();
+
+                    if(path_to_v.size() >= 1) {
+                        output_file << ", ";
+                    } 
+                }
+
+                output_file << "]" << std::endl;
+
             }
 
             

@@ -2,14 +2,13 @@ dijkstra.exe: dijkstra.o heap.o hash.o
 	g++ -o dijkstra.exe dijkstra.o heap.o hash.o
 
 dijkstra.o: dijkstra.cpp graph.h
-	g++ -g -Wall -Wextra -Wshadow -c dijkstra.cpp
+	g++ -std=c++17 -g -Wall -Wextra -Wshadow -c dijkstra.cpp
 
 heap.o: heap.cpp heap.h
-	g++ -g -Wall -Wextra -Wshadow -c heap.cpp
+	g++ -std=c++17 -g -Wall -Wextra -Wshadow -c heap.cpp
 
 hash.o: hash.cpp hash.h
-	g++ -g -Wall -Wextra -Wshadow -c hash.cpp
-
+	g++ -std=c++17 -g -Wall -Wextra -Wshadow -c hash.cpp
 debug:
 	g++ -Wall -Wextra -Wshadow -g -O1 -fsanitize=address,undefined \
 	    -fno-omit-frame-pointer -o dijkstra_debug.exe dijkstra.cpp heap.cpp hash.cpp

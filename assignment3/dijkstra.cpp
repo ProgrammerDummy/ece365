@@ -44,12 +44,14 @@ int main(void) {
 
     std::cout << "Total time (in seconds) to apply Dijkstra's algorithm: " << dijkstra_total_time << std::endl;
 
+    //myGraph.print_loaded_data();
+
     std::cout << "Enter name of output file: ";
 
     std::string output_filename;
 
     std::cin >> output_filename;
 
-    myGraph.write_output(output_filename);
+   myGraph.write_output(output_filename);
 
 }
